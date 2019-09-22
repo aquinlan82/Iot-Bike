@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Iot Bike</string>
+    <string name="title_activity_map">Map</string>
 </resources>
