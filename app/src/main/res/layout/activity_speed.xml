@@ -10,9 +10,9 @@
         android:id="@+id/speedView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="128dp"
-        android:layout_marginEnd="160dp"
-        android:layout_marginRight="160dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="176dp"
+        android:layout_marginRight="176dp"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -19,6 +19,8 @@ public class Speed extends AppCompatActivity {
     TextView speedView;
     Location lastLocation = null;
     LocationManager lm;
+    long startTime;
+    int time;
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             Log.v("ASDF", "change");
@@ -27,7 +29,8 @@ public class Speed extends AppCompatActivity {
             if (lastLocation != null) {
                 double elapsedTime = (location.getTime() - lastLocation.getTime()) / 1_000; // Convert milliseconds to seconds
                 speed = lastLocation.distanceTo(location) / elapsedTime;
-                bt.sendData(speed+"");
+                time = (int)((System.currentTimeMillis() - startTime) / 1000);
+                bt.sendData(speed+" "+time);
             }
             lastLocation = location;
         }
@@ -69,7 +72,15 @@ public class Speed extends AppCompatActivity {
         bt = new BluetoothCom();
         if(bt.BTinit(this))
         {
-            bt.BTconnect();
+            if(bt.BTconnect()) {
+                startTime = System.currentTimeMillis();
+                //put Card into intent and pull out here
+                CardWrapper cards = (CardWrapper) getIntent().getSerializableExtra("cards");
+                for(Card card : cards.getArray()) {
+                    bt.sendData(card.getOutput());
+                }
+                bt.sendData("ENDINIT");
+            }
         }
         speedView = (TextView) findViewById(R.id.speedView);
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

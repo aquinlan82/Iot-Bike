@@ -7,26 +7,37 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     BluetoothCom bt;
     boolean deviceConnected=false;
     Button connectBtn;
-    Button speedBtn;
-    Button mapBtn;
+    Button startBtn;
+    Button addBtn;
+    LinearLayout scroll;
     TextView statusView;
     Activity context = this;
+    ArrayList<Card> cards;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         bt = new BluetoothCom();
         connectBtn = (Button) findViewById(R.id.connectBtn);
-        speedBtn = (Button) findViewById(R.id.speedBtn);
-        mapBtn = (Button) findViewById(R.id.mapBtn);
+        startBtn = (Button) findViewById(R.id.startBtn);
+        addBtn = (Button) findViewById(R.id.addBtn);
         statusView = (TextView) findViewById(R.id.statusView);
+        scroll = (LinearLayout) findViewById(R.id.scrollLayout);
+        cards = new ArrayList<Card>();
 
         //Button listeners
         connectBtn.setOnClickListener(new View.OnClickListener() {
@@ -46,22 +57,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        speedBtn.setOnClickListener(new View.OnClickListener() {
+        startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CardWrapper send = new CardWrapper(cards);
                 Intent i = new Intent(context, Speed.class);
+                i.putExtra("cards", send);
                 startActivity(i);
             }
         });
 
-        mapBtn.setOnClickListener(new View.OnClickListener() {
+        addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*Intent i = new Intent(context, Map.class);
-                  startActivity(i);
-                */
+                CardPic temp = new CardPic(context);
+                scroll.addView(temp);
+                cards.add(new Card(temp));
             }
         });
+
+
     }
 
 }
