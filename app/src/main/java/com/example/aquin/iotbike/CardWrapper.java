@@ -6,8 +6,8 @@ import java.util.ArrayList;
 public class CardWrapper implements Serializable {
     private Card[] array;
 
-    public CardWrapper(ArrayList<Card> a){
-        array = a.toArray(new Card[a.size()]);;
+    public CardWrapper(Card[] in){
+        array = in;
     }
 
     public Card[] getArray() {

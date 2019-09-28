@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout scroll;
     TextView statusView;
     Activity context = this;
-    ArrayList<Card> cards;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         addBtn = (Button) findViewById(R.id.addBtn);
         statusView = (TextView) findViewById(R.id.statusView);
         scroll = (LinearLayout) findViewById(R.id.scrollLayout);
-        cards = new ArrayList<Card>();
 
         //Button listeners
         connectBtn.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Card[] cards = new Card[scroll.getChildCount()];
+                for (int i = 0; i < scroll.getChildCount(); i++) {
+                    cards[i] = new Card((CardPic)scroll.getChildAt(i));
+                }
+
                 CardWrapper send = new CardWrapper(cards);
                 Intent i = new Intent(context, Speed.class);
                 i.putExtra("cards", send);
@@ -72,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 CardPic temp = new CardPic(context);
                 scroll.addView(temp);
-                cards.add(new Card(temp));
             }
         });
 

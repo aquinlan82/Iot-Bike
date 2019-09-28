@@ -3,26 +3,23 @@ package com.example.aquin.iotbike;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.common.util.Strings;
+
 
 public class CardPic extends LinearLayout {
-    private EditText color_;
     private EditText speed_;
     private EditText time_;
 
     public CardPic(Context context) {
         super(context);
         setBackgroundColor(Color.GRAY);
-
-        TextView temp1 = new TextView(context);
-        temp1.setText("Color:");
-        addView(temp1);
-        color_ = new EditText(context);
-        addView(color_);
 
         TextView temp2 = new TextView(context);
         temp2.setText("Speed:");
@@ -37,14 +34,12 @@ public class CardPic extends LinearLayout {
         time_ = new EditText(context);
         time_.setInputType(InputType.TYPE_CLASS_NUMBER);
         addView(time_);
+
+
     }
 
     protected void onDraw (Canvas canvas) {
         super.onDraw(canvas);
-    }
-
-    String getColor() {
-        return color_.getText().toString();
     }
 
     String getTime() {

@@ -78,6 +78,7 @@ public class BluetoothCom implements Serializable {
         }
         if(connected)
         {
+            Log.v("ASDF", "Connected");
             try {
                 outputStream=socket.getOutputStream();
             } catch (IOException e) {
