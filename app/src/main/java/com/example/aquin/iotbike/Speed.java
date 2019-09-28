@@ -21,19 +21,23 @@ public class Speed extends AppCompatActivity {
     Location lastLocation = null;
     long startTime;
     int time;
+    long updateTime;
     int[] color;
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-            Log.v("ASDF", "change");
+            //Log.v("ASDF", "change");
             longitude = location.getLongitude();
             latitude = location.getLatitude();
             if (lastLocation != null) {
-                double elapsedTime = (location.getTime() - lastLocation.getTime()) / 1_000; // Convert milliseconds to seconds
-                speed = lastLocation.distanceTo(location) / elapsedTime;
+                long now = System.currentTimeMillis();
+                double elapsedTime = (now - updateTime) / 1_000; // Convert milliseconds to seconds
+                updateTime = now;
+                if (elapsedTime > 0) {
+                    speed = lastLocation.distanceTo(location) / elapsedTime;
+                }
                 time = (int)((System.currentTimeMillis() - startTime) / 1000);
                 setColor();
-                Log.v("A",color[0] + " " + color[1] + " " + color[2]);
-                Log.v("ASDF", location.getTime()+""+lastLocation.getTime());
+                //Log.v("ASDF",color[0] + " " + color[1] + " " + color[2]);
                 bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
             }
             lastLocation = location;
@@ -59,8 +63,7 @@ public class Speed extends AppCompatActivity {
     Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            timerHandler.postDelayed(this, 0);
-            Log.v("ASD","hi");
+            timerHandler.postDelayed(this, 100);
             try {
                 LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
@@ -85,11 +88,12 @@ public class Speed extends AppCompatActivity {
             if(bt.BTconnect()) {
                 connectView.setText("Bluetooth Connected!");
                 startTime = System.currentTimeMillis();
+                updateTime = System.currentTimeMillis();
             }
         }
         speedView = (TextView) findViewById(R.id.speedView);
         //Start thread that tracks speed
-       
+
         timerHandler.postDelayed(timerRunnable, 0);
 
     }
