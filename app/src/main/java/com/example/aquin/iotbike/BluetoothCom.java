@@ -152,4 +152,10 @@ public class BluetoothCom implements Serializable {
             Log.v("ASDF", "Error Sending");
         }
     }
+
+    void stopService() {
+        try {
+            socket.close();
+        } catch(Exception e){};
+    }
 }
