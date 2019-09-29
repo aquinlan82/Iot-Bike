@@ -1,6 +1,7 @@
 package com.example.aquin.iotbike;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.text.Editable;
@@ -19,10 +20,13 @@ public class CardPic extends LinearLayout {
 
     public CardPic(Context context) {
         super(context);
-        setBackgroundColor(Color.GRAY);
+        Resources resources = context.getResources();
+        final int resourceId = resources.getIdentifier("card", "drawable",
+                context.getPackageName());
+        setBackground(resources.getDrawable(resourceId));
 
         TextView temp2 = new TextView(context);
-        temp2.setText("Speed:");
+        temp2.setText("    Speed:");
         addView(temp2);
         speed_ = new EditText(context);
         speed_.setInputType(InputType.TYPE_CLASS_NUMBER);

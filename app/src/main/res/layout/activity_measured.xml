@@ -4,28 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/measure_background"
     tools:context=".Measured">
 
     <TextView
         android:id="@+id/speedView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="104dp"
-        android:layout_marginLeft="104dp"
+        android:layout_marginStart="36dp"
         android:layout_marginTop="68dp"
         android:layout_marginBottom="8dp"
         android:text="Speed:"
+        android:textColor="?android:attr/colorControlActivated"
+        android:textSize="35dp"
         app:layout_constraintBottom_toTopOf="@+id/avgSpeedView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/avgSpeedView"
         android:layout_width="wrap_content"
-        android:layout_height="16dp"
-        android:layout_marginStart="104dp"
-        android:layout_marginBottom="60dp"
+        android:layout_height="66dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginBottom="80dp"
         android:text="Average Speed:"
+        android:textColor="@android:color/holo_green_light"
+        android:textSize="35dp"
         app:layout_constraintBottom_toTopOf="@+id/maxSpeedView"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -33,18 +38,26 @@
         android:id="@+id/maxSpeedView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="128dp"
-        android:layout_marginBottom="100dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginBottom="172dp"
         android:text="Max Speed:"
+        android:textColor="@android:color/holo_orange_light"
+        android:textSize="35dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/connectView"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/connectView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="92dp"
+        android:layout_width="358dp"
+        android:layout_height="77dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
         android:text="Bluetooth NOT Connected"
+        android:textSize="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteX="116dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.8"
+        app:layout_constraintStart_toStartOf="parent" />
 </android.support.constraint.ConstraintLayout>

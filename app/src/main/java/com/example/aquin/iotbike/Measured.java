@@ -1,5 +1,6 @@
 package com.example.aquin.iotbike;
 
+import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -17,6 +18,7 @@ import java.util.Random;
 public class Measured extends AppCompatActivity {
     BluetoothCom bt;
     double speed = 0;
+    boolean connected;
     TextView speedView;
     TextView avgSpeedView;
     TextView maxSpeedView;
@@ -27,6 +29,7 @@ public class Measured extends AppCompatActivity {
     double avgSpeed;
     long updateTime;
     int[] color;
+    Activity context = this;
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             if (lastLocation != null) {
@@ -37,7 +40,9 @@ public class Measured extends AppCompatActivity {
                     setValues(lastLocation.distanceTo(location) / elapsedTime);
                 }
                 setColor();
-                bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+                if (connected) {
+                    bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+                }
             }
             lastLocation = location;
         }
@@ -64,14 +69,14 @@ public class Measured extends AppCompatActivity {
         public void run() {
             timerHandler.postDelayed(this, 100);
             try {
+                setupBt();
                 LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
                 lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                speedView.setText("speed: " + speed);
-                avgSpeedView.setText("average speed: " + avgSpeed);
-                maxSpeedView.setText("max speed: " + maxSpeed);
+                speedView.setText("Speed: " + String.format("%.2f", speed));
+                avgSpeedView.setText("Average speed: " + String.format("%.2f", avgSpeed));
+                maxSpeedView.setText("Max speed: " + String.format("%.2f", maxSpeed));
             } catch (SecurityException e) { }
-
         }
     };
 
@@ -82,23 +87,16 @@ public class Measured extends AppCompatActivity {
         setContentView(R.layout.activity_measured);
 
         connectView = (TextView) findViewById(R.id.connectView);
-        bt = new BluetoothCom();
         color = new int[3];
-        if(bt.BTinit(this))
-        {
-            if(bt.BTconnect()) {
-                connectView.setText("Bluetooth Connected!");
-                updateTime = System.currentTimeMillis();
-            }
-        }
+        connected = false;
         speedView = (TextView) findViewById(R.id.speedView);
         avgSpeedView = (TextView) findViewById(R.id.avgSpeedView);
         maxSpeedView = (TextView) findViewById(R.id.maxSpeedView);
         speeds = new ArrayList<Double>();
+        bt = new BluetoothCom();
 
         //Start thread that tracks speed
-
-        timerHandler.postDelayed(timerRunnable, 0);
+        timerHandler.postDelayed(timerRunnable, 100);
 
     }
 
@@ -154,6 +152,24 @@ public class Measured extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         bt.stopService();
+    }
+
+    void setupBt() {
+        if (!connected) {
+            connectView.setText("Connecting...");
+            if (bt.BTinit(context)) {
+                if (bt.BTconnect()) {
+                    connectView.setText("Bluetooth Connected!");
+                    connected = true;
+                    updateTime = System.currentTimeMillis();
+
+                } else {
+                    connectView.setText("Bluetooth NOT Connected");
+                }
+            } else {
+                connectView.setText("Bluetooth NOT Connected");
+            }
+        }
     }
 
 }

@@ -22,6 +22,7 @@ public class Goal extends AppCompatActivity {
     TextView speedView;
     TextView connectView;
     Location lastLocation = null;
+    boolean connected;
     long startTime;
     int time;
     long updateTime;
@@ -44,7 +45,9 @@ public class Goal extends AppCompatActivity {
                 }
                 time = (int)((System.currentTimeMillis() - startTime) / 1000);
                 setColor();
-                bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+                if (connected) {
+                    bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+                }
 
             }
             lastLocation = location;
@@ -71,6 +74,7 @@ public class Goal extends AppCompatActivity {
         @Override
         public void run() {
             timerHandler.postDelayed(this, 100);
+            setupBt();
             try {
                 if (running) {
                     LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -96,6 +100,7 @@ public class Goal extends AppCompatActivity {
         bt = new BluetoothCom();
         color = new int[3];
         speedView = (TextView) findViewById(R.id.speedView);
+        connected = false;
 
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,14 +126,7 @@ public class Goal extends AppCompatActivity {
             }
 
         });
-
         bt = new BluetoothCom();
-        if(bt.BTinit(this))
-        {
-            if(bt.BTconnect()) {
-                connectView.setText("Bluetooth Connected!");
-            }
-        }
 
         //Start thread that tracks speed
         timerHandler.postDelayed(timerRunnable, 0);
@@ -174,5 +172,21 @@ public class Goal extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         bt.stopService();
+    }
+
+    void setupBt() {
+        if (!connected) {
+            connectView.setText("Connecting...");
+            if (bt.BTinit(context)) {
+                if (bt.BTconnect()) {
+                    connectView.setText("Bluetooth Connected!");
+                    connected = true;
+                } else {
+                    connectView.setText("Bluetooth NOT Connected");
+                }
+            } else {
+                connectView.setText("Bluetooth NOT Connected");
+            }
+        }
     }
 }
