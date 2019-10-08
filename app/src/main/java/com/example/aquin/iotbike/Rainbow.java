@@ -46,6 +46,13 @@ public class Rainbow extends AppCompatActivity {
         bt.stopService();
     }
 
+    public void onResume() {
+        super.onResume();
+        connectView.setText("Connecting...");
+        connected = false;
+
+    }
+
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");

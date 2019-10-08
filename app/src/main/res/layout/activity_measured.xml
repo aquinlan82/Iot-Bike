@@ -25,7 +25,7 @@
     <TextView
         android:id="@+id/avgSpeedView"
         android:layout_width="wrap_content"
-        android:layout_height="66dp"
+        android:layout_height="76dp"
         android:layout_marginStart="36dp"
         android:layout_marginBottom="80dp"
         android:text="Average Speed:"
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="36dp"
-        android:layout_marginBottom="172dp"
+        android:layout_marginBottom="162dp"
         android:text="Max Speed:"
         android:textColor="@android:color/holo_orange_light"
         android:textSize="35dp"

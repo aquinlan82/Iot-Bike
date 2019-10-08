@@ -3,9 +3,10 @@ package com.example.aquin.iotbike;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,16 +17,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
-public class Goal extends AppCompatActivity {
+public class Goal extends AppCompatActivity implements SensorEventListener {
     BluetoothCom bt;
     double speed = 0;
     TextView speedView;
     TextView connectView;
-    Location lastLocation = null;
     boolean connected;
     long startTime;
+    long lastTime;
     int time;
-    long updateTime;
     boolean running;
     int[] color;
     Button startBtn;
@@ -33,41 +33,10 @@ public class Goal extends AppCompatActivity {
     LinearLayout scroll;
     Activity context = this;
     Card[] cards;
-
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            if (lastLocation != null) {
-                long now = System.currentTimeMillis();
-                double elapsedTime = (now - updateTime) / 1_000; // Convert milliseconds to seconds
-                updateTime = now;
-                if (elapsedTime > 0) {
-                    speed = lastLocation.distanceTo(location) / elapsedTime;
-                }
-                time = (int)((System.currentTimeMillis() - startTime) / 1000);
-                setColor();
-                if (connected) {
-                    bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
-                }
-
-            }
-            lastLocation = location;
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    double v0 = 0;
+    double acc = 0;
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -77,9 +46,7 @@ public class Goal extends AppCompatActivity {
             setupBt();
             try {
                 if (running) {
-                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                    lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                    getSpeed();
                     speedView.setText("speed: " + speed);
                 }
             } catch (SecurityException e) { }
@@ -102,6 +69,10 @@ public class Goal extends AppCompatActivity {
         speedView = (TextView) findViewById(R.id.speedView);
         connected = false;
 
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,7 +82,7 @@ public class Goal extends AppCompatActivity {
                 }
                 addBtn.setEnabled(false);
                 startTime = System.currentTimeMillis();
-                updateTime = System.currentTimeMillis();
+                lastTime = System.currentTimeMillis();
                 running = true;
             }
         });
@@ -129,14 +100,14 @@ public class Goal extends AppCompatActivity {
         bt = new BluetoothCom();
 
         //Start thread that tracks speed
-        timerHandler.postDelayed(timerRunnable, 0);
+        timerHandler.postDelayed(timerRunnable, 100);
 
     }
 
     void setColor() {
         //based on cards and time, set rgb
         int timeSum = 0;
-
+        time = (int)(System.currentTimeMillis() - startTime) / 1000;
         for(int i = 0; i < cards.length; i++) {
             timeSum += cards[i].getTimeInt();
             if (time < timeSum) {
@@ -174,6 +145,13 @@ public class Goal extends AppCompatActivity {
         bt.stopService();
     }
 
+    public void onResume() {
+        super.onResume();
+        connectView.setText("Connecting...");
+        connected = false;
+
+    }
+
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
@@ -188,5 +166,32 @@ public class Goal extends AppCompatActivity {
                 connectView.setText("Bluetooth NOT Connected");
             }
         }
+    }
+
+    public void getSpeed() {
+        ////////////////
+        //v = v0 + at
+        speed = v0 + acc*((double)(System.currentTimeMillis() - lastTime) / 1000.0);
+        lastTime = System.currentTimeMillis();
+        ////////////////
+        setColor();
+        if (connected) {
+            bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+        }
+    }
+
+    public void onSensorChanged(SensorEvent event){
+        float[] accs = {event.values[0], event.values[1], event.values[2]};
+        acc = 0;
+        for (int i = 0; i < accs.length; i++) {
+            if (Math.abs(accs[i]) < .01) {
+                accs[i] = 0;
+            }
+            acc += Math.pow(accs[i], 2);
+        }
+        acc = Math.sqrt(acc);
+    }
+
+    public void onAccuracyChanged(Sensor event, int amt){
     }
 }

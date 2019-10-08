@@ -2,6 +2,10 @@ package com.example.aquin.iotbike;
 
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -15,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
-public class Measured extends AppCompatActivity {
+public class Measured extends AppCompatActivity implements SensorEventListener {
     BluetoothCom bt;
     double speed = 0;
     boolean connected;
@@ -23,45 +27,19 @@ public class Measured extends AppCompatActivity {
     TextView avgSpeedView;
     TextView maxSpeedView;
     TextView connectView;
-    Location lastLocation = null;
     ArrayList<Double> speeds;
     double maxSpeed;
     double avgSpeed;
     long updateTime;
     int[] color;
     Activity context = this;
-    private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            if (lastLocation != null) {
-                long now = System.currentTimeMillis();
-                double elapsedTime = (now - updateTime) / 1_000; // Convert milliseconds to seconds
-                updateTime = now;
-                if (elapsedTime > 0) {
-                    setValues(lastLocation.distanceTo(location) / elapsedTime);
-                }
-                setColor();
-                if (connected) {
-                    bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
-                }
-            }
-            lastLocation = location;
-        }
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    double v0 = 0;
+    double acc = 0;
+    long startTime;
 
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
 
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -70,12 +48,12 @@ public class Measured extends AppCompatActivity {
             timerHandler.postDelayed(this, 100);
             try {
                 setupBt();
-                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-                lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-                speedView.setText("Speed: " + String.format("%.2f", speed));
-                avgSpeedView.setText("Average speed: " + String.format("%.2f", avgSpeed));
-                maxSpeedView.setText("Max speed: " + String.format("%.2f", maxSpeed));
+                if (connected) {
+                    getSpeed();
+                    speedView.setText("Speed: " + String.format("%.2f", speed));
+                    avgSpeedView.setText("Average speed: " + String.format("%.2f", avgSpeed));
+                    maxSpeedView.setText("Max speed: " + String.format("%.2f", maxSpeed));
+                }
             } catch (SecurityException e) { }
         }
     };
@@ -85,6 +63,10 @@ public class Measured extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_measured);
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         connectView = (TextView) findViewById(R.id.connectView);
         color = new int[3];
@@ -101,7 +83,7 @@ public class Measured extends AppCompatActivity {
     }
 
     void setColor() {
-        double max = 6.5;
+        double max = 6;
         double cutoff = max / 4;
         if (speed > (3 * cutoff)) {
             color[0] = 255;
@@ -154,6 +136,13 @@ public class Measured extends AppCompatActivity {
         bt.stopService();
     }
 
+    public void onResume() {
+        super.onResume();
+        connectView.setText("Connecting...");
+        connected = false;
+
+    }
+
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
@@ -172,4 +161,31 @@ public class Measured extends AppCompatActivity {
         }
     }
 
+    public void getSpeed() {
+        ////////////////
+        //v = v0 + at
+        double speedCalc = v0 + acc*((double)(System.currentTimeMillis() - startTime)/1000.0);
+        startTime = System.currentTimeMillis();
+        ////////////////
+        setValues(speedCalc);
+        setColor();
+        if (connected) {
+            bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+        }
+    }
+
+    public void onSensorChanged(SensorEvent event){
+        float[] accs = {event.values[0], event.values[1], event.values[2]};
+        acc = 0;
+        for (int i = 0; i < accs.length; i++) {
+            if (Math.abs(accs[i]) < .01) {
+                accs[i] = 0;
+            }
+            acc += Math.pow(accs[i], 2);
+        }
+        acc = Math.sqrt(acc);
+    }
+
+    public void onAccuracyChanged(Sensor event, int amt){
+    }
 }
