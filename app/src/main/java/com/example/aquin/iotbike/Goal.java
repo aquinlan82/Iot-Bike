@@ -48,6 +48,8 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
                 if (running) {
                     getSpeed();
                     speedView.setText("speed: " + speed);
+                } else {
+                    speedView.setText("Done");
                 }
             } catch (SecurityException e) { }
 
@@ -118,9 +120,12 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
             }
         }
         //finished workout
+        bt.sendData("255/255/255");
         color[0] = 255;
         color[1] = 255;
         color[2] = 255;
+        running = false;
+        speedView.setText("Done");
     }
 
     private void setColor(int goal, int actual) {
@@ -140,16 +145,9 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         }
     }
 
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
         bt.stopService();
-    }
-
-    public void onResume() {
-        super.onResume();
-        connectView.setText("Connecting...");
-        connected = false;
-
     }
 
     void setupBt() {
@@ -171,11 +169,11 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     public void getSpeed() {
         ////////////////
         //v = v0 + at
-        speed = v0 + acc*((double)(System.currentTimeMillis() - lastTime) / 1000.0);
+        speed = v0 + acc*((double)(System.currentTimeMillis() - lastTime) / 100.0);
         lastTime = System.currentTimeMillis();
         ////////////////
         setColor();
-        if (connected) {
+        if (connected && running) {
             bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
         }
     }

@@ -146,6 +146,8 @@ public class BluetoothCom implements Serializable {
     }
 
     void sendData(String out) {
+        out = out + "-";
+        Log.v("ASDF", out);
         try {
             outputStream.write(out.getBytes());
         } catch (Exception ex) {

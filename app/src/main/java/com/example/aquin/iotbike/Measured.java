@@ -83,9 +83,13 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     }
 
     void setColor() {
-        double max = 6;
+        double max = 10;
         double cutoff = max / 4;
-        if (speed > (3 * cutoff)) {
+        if (speed > (4 * cutoff)) {
+            color[0] = 255;
+            color[1] = 255;
+            color[2] = 254;
+        } else if (speed > (3 * cutoff)) {
             color[0] = 255;
             color[1] = scaleColor(0, cutoff, true);
             color[2] = 0;
@@ -131,16 +135,9 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         avgSpeed = sum / speeds.size();
     }
 
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
         bt.stopService();
-    }
-
-    public void onResume() {
-        super.onResume();
-        connectView.setText("Connecting...");
-        connected = false;
-
     }
 
     void setupBt() {
@@ -164,7 +161,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     public void getSpeed() {
         ////////////////
         //v = v0 + at
-        double speedCalc = v0 + acc*((double)(System.currentTimeMillis() - startTime)/1000.0);
+        double speedCalc = v0 + acc*((double)(System.currentTimeMillis() - startTime)/100.0);
         startTime = System.currentTimeMillis();
         ////////////////
         setValues(speedCalc);

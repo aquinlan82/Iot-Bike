@@ -41,16 +41,9 @@ public class Rainbow extends AppCompatActivity {
 
     }
 
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
         bt.stopService();
-    }
-
-    public void onResume() {
-        super.onResume();
-        connectView.setText("Connecting...");
-        connected = false;
-
     }
 
     void setupBt() {
