@@ -213,6 +213,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
             Map<String, Object> user = new HashMap<>();
             user.put("speed", speeds.get(i).get(0));
             user.put("time", speeds.get(i).get(1));
+            user.put("id", appStart);
 
             // Add a new document with a generated ID
             db.collection(date)

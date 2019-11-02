@@ -22,8 +22,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -55,7 +58,7 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         @Override
         public void run() {
             timerHandler.postDelayed(this, 100);
-            setupBt();
+            //setupBt();
             try {
                 if (running) {
                     getSpeed();
@@ -83,6 +86,7 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         speedView = (TextView) findViewById(R.id.speedView);
         connected = false;
 
+        speeds = new ArrayList<ArrayList<Double>>();
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -160,6 +164,7 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
+        sendToCloud();
     }
 
     void setupBt() {
@@ -185,12 +190,13 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         lastTime = System.currentTimeMillis();
         ArrayList<Double> temp = new ArrayList<Double>();
         temp.add(speed);
-        temp.add((double)(lastTime/1000));
+        double nowTime = (double)((System.currentTimeMillis() - startTime) / 1000);
+        temp.add(nowTime);
         speeds.add(temp);
         ////////////////
         setColor();
         if (connected && running) {
-            bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
+            //bt.sendData(color[0] + "/" + color[1] + "/" + color[2]);
         }
     }
 
@@ -210,25 +216,29 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     }
 
     public void sendToCloud() {
-        // Create a new user with a first and last name
-        Map<String, Object> user = new HashMap<>();
-        user.put("Array" , speeds );
+        String date = new SimpleDateFormat("M-d-yyyy", Locale.getDefault()).format(new Date());
+        for (int i = 0; i < speeds.size(); i+= 10) {
+            Map<String, Object> user = new HashMap<>();
+            user.put("speed", speeds.get(i).get(0));
+            user.put("time", speeds.get(i).get(1));
+            user.put("id", startTime);
 
-        // Add a new document with a generated ID
-        db.collection("speeds")
-                .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("ASDF", "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("ASDF", "Error adding document", e);
-                    }
-                });
+            // Add a new document with a generated ID
+            db.collection(date)
+                    .add(user)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.v("ASDFS", "DocumentSnapshot added with ID: " + documentReference.getId());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.v("ASDFS", "Error adding document", e);
+                        }
+                    });
+        }
 
     }
 }
