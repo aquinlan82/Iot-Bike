@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Goal extends AppCompatActivity implements SensorEventListener {
@@ -37,6 +47,8 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     private Sensor sensor;
     double v0 = 0;
     double acc = 0;
+    ArrayList<ArrayList<Double>> speeds;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -171,6 +183,10 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         //v = v0 + at
         speed = v0 + acc*((double)(System.currentTimeMillis() - lastTime) / 100.0);
         lastTime = System.currentTimeMillis();
+        ArrayList<Double> temp = new ArrayList<Double>();
+        temp.add(speed);
+        temp.add((double)(lastTime/1000));
+        speeds.add(temp);
         ////////////////
         setColor();
         if (connected && running) {
@@ -191,5 +207,28 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     }
 
     public void onAccuracyChanged(Sensor event, int amt){
+    }
+
+    public void sendToCloud() {
+        // Create a new user with a first and last name
+        Map<String, Object> user = new HashMap<>();
+        user.put("Array" , speeds );
+
+        // Add a new document with a generated ID
+        db.collection("speeds")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d("ASDF", "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("ASDF", "Error adding document", e);
+                    }
+                });
+
     }
 }

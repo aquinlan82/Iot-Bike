@@ -10,12 +10,23 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 
@@ -27,7 +38,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     TextView avgSpeedView;
     TextView maxSpeedView;
     TextView connectView;
-    ArrayList<Double> speeds;
+    ArrayList<ArrayList<Double>> speeds;
     double maxSpeed;
     double avgSpeed;
     long updateTime;
@@ -38,6 +49,8 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     double v0 = 0;
     double acc = 0;
     long startTime;
+    long appStart;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
 
@@ -48,6 +61,8 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
             timerHandler.postDelayed(this, 100);
             try {
                 setupBt();
+                //delete
+                connected = true;
                 if (connected) {
                     getSpeed();
                     speedView.setText("Speed: " + String.format("%.2f", speed));
@@ -74,8 +89,9 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         speedView = (TextView) findViewById(R.id.speedView);
         avgSpeedView = (TextView) findViewById(R.id.avgSpeedView);
         maxSpeedView = (TextView) findViewById(R.id.maxSpeedView);
-        speeds = new ArrayList<Double>();
+        speeds = new ArrayList<ArrayList<Double>>();
         bt = new BluetoothCom();
+        appStart = System.currentTimeMillis();
 
         //Start thread that tracks speed
         timerHandler.postDelayed(timerRunnable, 100);
@@ -83,7 +99,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     }
 
     void setColor() {
-        double max = 10;
+        double max = 6;
         double cutoff = max / 4;
         if (speed > (4 * cutoff)) {
             color[0] = 255;
@@ -119,18 +135,22 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
 
     void setValues(double newSpeed) {
         speed = newSpeed;
+        double nowTime = (System.currentTimeMillis() - appStart) / 1000;
 
         if (speed > maxSpeed) {
             maxSpeed = speed;
         }
-        speeds.add(speed);
+        ArrayList temp = new ArrayList<Double>();
+        temp.add(speed);
+        temp.add(nowTime);
+        speeds.add(temp);
         averageSpeeds();
     }
 
     void averageSpeeds() {
         int sum = 0;
-        for(double speed : speeds) {
-            sum += speed;
+        for(ArrayList<Double> value : speeds) {
+            sum += value.get(0);
         }
         avgSpeed = sum / speeds.size();
     }
@@ -138,6 +158,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
+        sendToCloud();
     }
 
     void setupBt() {
@@ -184,5 +205,31 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     }
 
     public void onAccuracyChanged(Sensor event, int amt){
+    }
+
+    public void sendToCloud() {
+        String date = new SimpleDateFormat("M-d-yyyy", Locale.getDefault()).format(new Date());
+        for (int i = 0; i < speeds.size(); i+= 10) {
+            Map<String, Object> user = new HashMap<>();
+            user.put("speed", speeds.get(i).get(0));
+            user.put("time", speeds.get(i).get(1));
+
+            // Add a new document with a generated ID
+            db.collection(date)
+                    .add(user)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.v("ASDFS", "DocumentSnapshot added with ID: " + documentReference.getId());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.v("ASDFS", "Error adding document", e);
+                        }
+                    });
+            }
+
     }
 }

@@ -26,7 +26,8 @@
         </activity>
         <activity android:name=".Goal" />
         <activity android:name=".Measured" />
-        <activity android:name=".Rainbow"></activity>
+        <activity android:name=".Rainbow" />
+        <activity android:name=".Graph"></activity>
     </application>
 
 </manifest>

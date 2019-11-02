@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
     Button goal;
     Button measure;
     Button rainbow;
+    Button graph;
     Activity context = this;
 
     @Override
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         goal = (Button) findViewById(R.id.goal);
         measure = (Button) findViewById(R.id.measure);
         rainbow = (Button) findViewById(R.id.rainbow);
+        graph = (Button) findViewById(R.id.graph);
 
         goal.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,6 +45,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(context, Rainbow.class));
+            }
+        });
+
+        graph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(context, Graph.class));
             }
         });
 
