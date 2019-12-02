@@ -15,17 +15,16 @@ import android.widget.TextView;
 
 
 public class Rainbow extends AppCompatActivity {
-    boolean connected;
-    BluetoothCom bt;
-    TextView connectView;
-    Activity context = this;
-    Handler timerHandler = new Handler();
+    private boolean connected;
+    private BluetoothCom bt;
+    private TextView connectView;
+    private Activity context = this;
+    private Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
             timerHandler.postDelayed(this, 100);
             setupBt();
-
         }
     };
 
@@ -41,12 +40,18 @@ public class Rainbow extends AppCompatActivity {
 
     }
 
+    /**
+     * Destroy bluetooth connection when hitting back button/closing app
+     */
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
     }
 
-    void setupBt() {
+    /**
+     * Creates bluetooth connection to arduino
+     **/
+    public void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
             if (bt.BTinit(context)) {

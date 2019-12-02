@@ -25,9 +25,9 @@ public class BluetoothCom implements Serializable {
     private BluetoothSocket socket;
     private OutputStream outputStream;
     private InputStream inputStream;
-    byte buffer[];
-    int bufferPosition;
-    boolean stopThread;
+    private byte buffer[];
+    private int bufferPosition;
+    private boolean stopThread;
 
     public boolean BTinit(Activity context) {
         boolean found=false;
@@ -64,6 +64,8 @@ public class BluetoothCom implements Serializable {
         }
         return found;
     }
+
+
 
     public boolean BTconnect()
     {

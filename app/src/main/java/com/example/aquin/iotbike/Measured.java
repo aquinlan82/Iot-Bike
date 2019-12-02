@@ -31,26 +31,26 @@ import java.util.Random;
 
 
 public class Measured extends AppCompatActivity implements SensorEventListener {
-    BluetoothCom bt;
-    double speed = 0;
-    boolean connected;
-    TextView speedView;
-    TextView avgSpeedView;
-    TextView maxSpeedView;
-    TextView connectView;
-    ArrayList<ArrayList<Double>> speeds;
-    double maxSpeed;
-    double avgSpeed;
-    long updateTime;
-    int[] color;
-    Activity context = this;
+    private BluetoothCom bt;
+    private double speed = 0;
+    private boolean connected;
+    private TextView speedView;
+    private TextView avgSpeedView;
+    private TextView maxSpeedView;
+    private TextView connectView;
+    private ArrayList<ArrayList<Double>> speeds;
+    private double maxSpeed;
+    private double avgSpeed;
+    private long updateTime;
+    private int[] color;
+    private Activity context = this;
     private SensorManager sensorManager;
     private Sensor sensor;
-    double v0 = 0;
-    double acc = 0;
-    long startTime;
-    long appStart;
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private double v0 = 0;
+    private double acc = 0;
+    private long startTime;
+    private long appStart;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
 
@@ -61,8 +61,6 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
             timerHandler.postDelayed(this, 100);
             try {
                 setupBt();
-                //delete
-                connected = true;
                 if (connected) {
                     getSpeed();
                     speedView.setText("Speed: " + String.format("%.2f", speed));
@@ -98,6 +96,9 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
 
     }
 
+    /**
+     * Based on speed, determine rgb
+     */
     void setColor() {
         double max = 6;
         double cutoff = max / 4;
@@ -124,7 +125,14 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
-    int scaleColor(double minSpeed, double maxSpeed, boolean increasing) {
+    /**
+     * Helper function for converting input to rgb value
+     * @param minSpeed Start of usable color spectrum
+     * @param maxSpeed End of usable color spectrum
+     * @param increasing True if higher input means higher output, false otherwise
+     * @return speed scaled to 0-255 scale
+     */
+    private int scaleColor(double minSpeed, double maxSpeed, boolean increasing) {
         double factor = 255 / (maxSpeed - minSpeed);
         int value = (int)(speed * factor);
         if (increasing) {
@@ -133,6 +141,10 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         return 255 - value;
     }
 
+    /**
+     * Sets all speed values
+     * @param newSpeed current speed
+     */
     void setValues(double newSpeed) {
         speed = newSpeed;
         double nowTime = (System.currentTimeMillis() - appStart) / 1000;
@@ -155,12 +167,18 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         avgSpeed = sum / speeds.size();
     }
 
+    /**
+     * Destroy bluetooth connection when leaving screen
+     */
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
         sendToCloud();
     }
 
+    /**
+     * Create connection to Arduino
+     */
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
@@ -179,6 +197,9 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
+    /**
+     * Calculate speed from acceleration using v = v0 + at
+     */
     public void getSpeed() {
         ////////////////
         //v = v0 + at
@@ -192,6 +213,10 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
+    /**
+     * Update acceleration values
+     * @param event
+     */
     public void onSensorChanged(SensorEvent event){
         float[] accs = {event.values[0], event.values[1], event.values[2]};
         acc = 0;
@@ -207,6 +232,9 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     public void onAccuracyChanged(Sensor event, int amt){
     }
 
+    /**
+     * Create map of data points containing speed and time, plus an id to group data points
+     */
     public void sendToCloud() {
         String date = new SimpleDateFormat("M-d-yyyy", Locale.getDefault()).format(new Date());
         for (int i = 0; i < speeds.size(); i+= 10) {

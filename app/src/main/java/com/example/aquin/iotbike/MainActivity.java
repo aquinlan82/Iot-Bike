@@ -11,11 +11,11 @@ import android.widget.Button;
 
 
 public class MainActivity extends AppCompatActivity {
-    Button goal;
-    Button measure;
-    Button rainbow;
-    Button graph;
-    Activity context = this;
+    private Button goal;
+    private Button measure;
+    private Button rainbow;
+    private Button graph;
+    private Activity context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

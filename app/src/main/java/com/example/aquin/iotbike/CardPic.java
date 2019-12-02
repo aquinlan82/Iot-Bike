@@ -36,7 +36,7 @@ public class CardPic extends LinearLayout {
         temp3.setText("Time:");
         addView(temp3);
         time_ = new EditText(context);
-        time_.setInputType(InputType.TYPE_CLASS_NUMBER);
+        time_.setInputType(InputType.TYPE_CLASS_NUMBER  | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         addView(time_);
 
 

@@ -31,27 +31,27 @@ import java.util.Map;
 
 
 public class Goal extends AppCompatActivity implements SensorEventListener {
-    BluetoothCom bt;
-    double speed = 0;
-    TextView speedView;
-    TextView connectView;
-    boolean connected;
-    long startTime;
-    long lastTime;
-    int time;
-    boolean running;
-    int[] color;
-    Button startBtn;
-    Button addBtn;
-    LinearLayout scroll;
-    Activity context = this;
-    Card[] cards;
+    private BluetoothCom bt;
+    private double speed = 0;
+    private TextView speedView;
+    private TextView connectView;
+    private boolean connected;
+    private long startTime;
+    private long lastTime;
+    private int time;
+    private boolean running;
+    private int[] color;
+    private Button startBtn;
+    private Button addBtn;
+    private LinearLayout scroll;
+    private Activity context = this;
+    private Card[] cards;
     private SensorManager sensorManager;
     private Sensor sensor;
-    double v0 = 0;
-    double acc = 0;
-    ArrayList<ArrayList<Double>> speeds;
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private double v0 = 0;
+    private double acc = 0;
+    private ArrayList<ArrayList<Double>> speeds;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
@@ -122,6 +122,9 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
 
     }
 
+    /**
+     * Based on speed, determine rgb
+     */
     void setColor() {
         //based on cards and time, set rgb
         int timeSum = 0;
@@ -144,6 +147,9 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         speedView.setText("Done");
     }
 
+    /**
+     * Based on speed, determine rgb
+     */
     private void setColor(int goal, int actual) {
         int diff = actual - goal;
         if (Math.abs(diff) < 2) {
@@ -161,12 +167,18 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         }
     }
 
+    /**
+     * Destroy bluetooth connection when leaving screen
+     */
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
         sendToCloud();
     }
 
+    /**
+     * Create connection to Arduino
+     */
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
@@ -183,6 +195,9 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         }
     }
 
+    /**
+     * Calculate speed from acceleration using v = v0 + at
+     */
     public void getSpeed() {
         ////////////////
         //v = v0 + at
@@ -200,6 +215,10 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
         }
     }
 
+    /**
+     * Update acceleration values
+     * @param event
+     */
     public void onSensorChanged(SensorEvent event){
         float[] accs = {event.values[0], event.values[1], event.values[2]};
         acc = 0;
@@ -215,6 +234,9 @@ public class Goal extends AppCompatActivity implements SensorEventListener {
     public void onAccuracyChanged(Sensor event, int amt){
     }
 
+    /**
+     * Create map of data points containing speed and time, plus an id to group data points
+     */
     public void sendToCloud() {
         String date = new SimpleDateFormat("M-d-yyyy", Locale.getDefault()).format(new Date());
         for (int i = 0; i < speeds.size(); i+= 10) {
