@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "963895722610",
+    "firebase_url": "https://iot-bike-9e8ac.firebaseio.com",
+    "project_id": "iot-bike-9e8ac",
+    "storage_bucket": "iot-bike-9e8ac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963895722610:android:96e06ede021d264a1478eb",
+        "android_client_info": {
+          "package_name": "com.example.aquin.iotbike"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "963895722610-4g49ioq48l1u0m7frpjo44sc2a55ahdb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk9ZB3AYZIe-yBaHrVy8ZS-RGsLgqTnPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "963895722610-4g49ioq48l1u0m7frpjo44sc2a55ahdb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
