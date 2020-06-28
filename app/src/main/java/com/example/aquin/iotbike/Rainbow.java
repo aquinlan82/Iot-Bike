@@ -13,14 +13,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-
+/**
+Rainbow Setting
+Connects to bluetooth and then continuously sends code for rainbow setting
+**/
 public class Rainbow extends AppCompatActivity {
-    private boolean connected;
-    private BluetoothCom bt;
-    private TextView connectView;
+    private boolean connected;  //connection status
+    private BluetoothCom bt;    //connects to HC-06
+    private TextView connectView;   //shows user connection status
     private Activity context = this;
     private Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
+		//reruns bluetooth message every 100 ms to ensure stable connection
         @Override
         public void run() {
             timerHandler.postDelayed(this, 100);
@@ -28,6 +32,7 @@ public class Rainbow extends AppCompatActivity {
         }
     };
 
+	//Sets GUI and starts bluetooth connection
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,17 +45,13 @@ public class Rainbow extends AppCompatActivity {
 
     }
 
-    /**
-     * Destroy bluetooth connection when hitting back button/closing app
-     */
+    //Destroy bluetooth connection when hitting back button/closing app
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
     }
 
-    /**
-     * Creates bluetooth connection to arduino
-     **/
+    //Creates bluetooth connection to arduino and sends rainbow data
     public void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");

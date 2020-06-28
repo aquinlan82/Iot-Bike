@@ -18,6 +18,10 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+BluetoothCom Class
+Handles connection and writes to the HC-06 module on the arduino
+**/
 public class BluetoothCom implements Serializable {
     private final String DEVICE_ADDRESS="20:18:02:22:17:32";
     private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
@@ -29,6 +33,7 @@ public class BluetoothCom implements Serializable {
     private int bufferPosition;
     private boolean stopThread;
 
+	//find devices to connect to or deal with errors
     public boolean BTinit(Activity context) {
         boolean found=false;
         BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
@@ -65,10 +70,8 @@ public class BluetoothCom implements Serializable {
         return found;
     }
 
-
-
-    public boolean BTconnect()
-    {
+	//Connect to chosen device
+    public boolean BTconnect() {
         boolean connected=true;
         try {
             socket = device.createRfcommSocketToServiceRecord(PORT_UUID);
@@ -76,11 +79,8 @@ public class BluetoothCom implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
             connected=false;
-            Log.v("ASDF", "Not Connected");
         }
-        if(connected)
-        {
-            Log.v("ASDF", "Connected");
+        if(connected) {
             try {
                 outputStream=socket.getOutputStream();
             } catch (IOException e) {
@@ -97,66 +97,17 @@ public class BluetoothCom implements Serializable {
         return connected;
     }
 
-    void beginListenForData()
-    {
-        final Handler handler = new Handler();
-        stopThread = false;
-        buffer = new byte[1024];
-        Thread thread  = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                while(!Thread.currentThread().isInterrupted() && !stopThread)
-                {
-                    try
-                    {
-                        int byteCount = inputStream.available();
-                        if(byteCount > 0)
-                        {
-                            byte[] rawBytes = new byte[byteCount];
-                            inputStream.read(rawBytes);
-                            final String string=new String(rawBytes,"UTF-8");
-                            handler.post(new Runnable() {
-                                public void run()
-                                {
-                                    // speedView.append(string);
-                                }
-                            });
-
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        stopThread = true;
-                    }
-                }
-            }
-        });
-
-        thread.start();
-    }
-
-    void sendTestData() {
-        Log.v("ASDF", "say Hi");
-        try {
-            String out = "hi";
-            outputStream.write("hi".getBytes());
-            Log.v("ASDF", "Hi");
-        } catch (Exception ex) {
-            Log.v("ASDF", "no");
-        }
-    }
-
+	//Write data to HC-06, using "-" as an end charachter
     void sendData(String out) {
         out = out + "-";
-        Log.v("ASDF", out);
         try {
             outputStream.write(out.getBytes());
         } catch (Exception ex) {
-            Log.v("ASDF", "Error Sending");
+            Log.v("BluetoothCom", "Error Sending");
         }
     }
 
+	//Disconnect from HC-06
     void stopService() {
         try {
             socket.close();

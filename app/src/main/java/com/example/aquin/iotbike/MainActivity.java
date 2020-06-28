@@ -9,7 +9,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+/**
+IoT Bike
+Created by Allison Quinlan for CS 498 IT
+December 2019
+**/
 
+
+
+/**
+Main Activity Class
+Displays buttons for user to select which mode
+**/
 public class MainActivity extends AppCompatActivity {
     private Button goal;
     private Button measure;
@@ -17,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private Button graph;
     private Activity context = this;
 
+	//setup GUI and go to indicated mode on button press
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

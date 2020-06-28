@@ -25,16 +25,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+Graph Mode
+Displays time and speed data from firebase database
+**/
 public class Graph extends AppCompatActivity {
-
     private DatePicker picker;
     private Button show;
-    private TextView temp;
     private GraphView graph;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+	//each datapoint contains an id based on which consecutive mode it was collected in,
+	//the speed the user was going and the time they were going it
     private Map<Long, ArrayList<DataPoint>> serieses = new HashMap<Long, ArrayList<DataPoint>>();
 
-
+	//Sets up GUI and button listener
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +46,6 @@ public class Graph extends AppCompatActivity {
 
         picker = (DatePicker)findViewById(R.id.simpleDatePicker);
         show = (Button) findViewById(R.id.show);
-        temp = (TextView) findViewById(R.id.temp);
         graph = (GraphView) findViewById(R.id.graph);
 
         graph.getViewport().setScalable(true);
@@ -50,6 +53,7 @@ public class Graph extends AppCompatActivity {
         graph.getViewport().setScalableY(true);
         graph.getViewport().setScrollableY(true);
 
+		//Get graph for given date
         show.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,29 +64,10 @@ public class Graph extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
-                                        serieses.putIfAbsent((long)document.getData().get("id"), new ArrayList<DataPoint>());
-                                        double time = (double) document.getData().get("time");
-                                        double speed = (double) document.getData().get("speed");
-                                        serieses.get(document.getData().get("id")).add(new DataPoint(time, speed));
-                                    }
-                                    int[] colors = {Color.GREEN, Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA };
-                                    int index = 0;
-                                    for (ArrayList<DataPoint> array : serieses.values()) {
-                                        for (DataPoint point : array) {
-                                            LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
-                                                    point
-                                            });
-                                            series.setColor(colors[index]);
-                                            series.setDrawDataPoints(true);
-                                            series.setDataPointsRadius(10);
-                                            series.setThickness(8);
-                                            graph.addSeries(series);
-                                        }
-                                        index = (index + 1) % colors.length;
-                                    }
+									buildMap();
+									graphData();
                                 } else {
-                                    Log.w("ASDF", "Error getting documents.", task.getException());
+                                    Log.w("Graph", "Error getting documents.", task.getException());
                                 }
                             }
                         });
@@ -90,4 +75,37 @@ public class Graph extends AppCompatActivity {
         });
 
     }
+
+	//Each datapoint is stored as a document
+	//Here they are sorted by id into datapoints for plotting
+	private void buildMap(Task<QuerySnapshot> task) {
+		for (QueryDocumentSnapshot document : task.getResult()) {
+			serieses.putIfAbsent((long)document.getData().get("id"), new ArrayList<DataPoint>());
+			double time = (double) document.getData().get("time");
+			double speed = (double) document.getData().get("speed");
+			serieses.get(document.getData().get("id")).add(new DataPoint(time, speed));
+		}
+	}
+
+	//graph the time and speed for each datapoint, with different colors for 
+	//different ids
+	private void graphData() {
+		//colors to use for datapoints
+		int[] colors = {Color.GREEN, Color.BLUE, Color.RED, Color.YELLOW, Color.MAGENTA };
+		int index = 0;
+		for (ArrayList<DataPoint> array : serieses.values()) {
+			for (DataPoint point : array) {
+				LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
+						point
+				});
+				series.setColor(colors[index]);
+				series.setDrawDataPoints(true);
+				series.setDataPointsRadius(10);
+				series.setThickness(8);
+				graph.addSeries(series);
+			}
+			index = (index + 1) % colors.length;
+		}
+	}
+
 }

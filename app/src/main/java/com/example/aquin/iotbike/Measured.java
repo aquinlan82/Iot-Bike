@@ -29,33 +29,38 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-
+/**
+Speed Setting
+Continuously monitors speed and gives up to 
+date feedback to user
+**/
 public class Measured extends AppCompatActivity implements SensorEventListener {
     private BluetoothCom bt;
-    private double speed = 0;
-    private boolean connected;
-    private TextView speedView;
+    private double speed = 0;     //speed calculated from accelerometer
+    private boolean connected;    //connection status
+    private TextView speedView;    //view to inform user of speed and bluetooth data
     private TextView avgSpeedView;
     private TextView maxSpeedView;
     private TextView connectView;
-    private ArrayList<ArrayList<Double>> speeds;
-    private double maxSpeed;
+    private ArrayList<ArrayList<Double>> speeds;   //speeds stored for average calculation
+    private double maxSpeed;   
     private double avgSpeed;
-    private long updateTime;
-    private int[] color;
+    private long updateTime;  //
+    private int[] color;      //color to send to Pixels
     private Activity context = this;
-    private SensorManager sensorManager;
-    private Sensor sensor;
-    private double v0 = 0;
+    private SensorManager sensorManager;    //used to get accelerometer data
+    private Sensor sensor; 
+    private double v0 = 0;     //initial velocity used to calculate acceleration
     private double acc = 0;
-    private long startTime;
-    private long appStart;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private long startTime;    //time since last speed datapoint collected
+    private long appStart;		//time since starting speed mode
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();   //all data stored in firebase for later
 
 
 
     Handler timerHandler = new Handler();
     Runnable timerRunnable = new Runnable() {
+		//continously checks bluetooth connection and collects speed
         @Override
         public void run() {
             timerHandler.postDelayed(this, 100);
@@ -71,7 +76,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     };
 
-
+	//displays GUI and initializes variables
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,9 +101,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
 
     }
 
-    /**
-     * Based on speed, determine rgb
-     */
+	//Based on speed, determine color
     void setColor() {
         double max = 6;
         double cutoff = max / 4;
@@ -125,13 +128,11 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
-    /**
-     * Helper function for converting input to rgb value
-     * @param minSpeed Start of usable color spectrum
-     * @param maxSpeed End of usable color spectrum
-     * @param increasing True if higher input means higher output, false otherwise
-     * @return speed scaled to 0-255 scale
-     */
+     // Helper function for converting input to rgb value
+     // @param minSpeed Start of usable color spectrum
+     // @param maxSpeed End of usable color spectrum
+     // @param increasing True if higher input means higher output, false otherwise
+     // @return speed scaled to 0-255 scale
     private int scaleColor(double minSpeed, double maxSpeed, boolean increasing) {
         double factor = 255 / (maxSpeed - minSpeed);
         int value = (int)(speed * factor);
@@ -141,10 +142,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         return 255 - value;
     }
 
-    /**
-     * Sets all speed values
-     * @param newSpeed current speed
-     */
+    // Sets speed, max, and average values
     void setValues(double newSpeed) {
         speed = newSpeed;
         double nowTime = (System.currentTimeMillis() - appStart) / 1000;
@@ -159,6 +157,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         averageSpeeds();
     }
 
+	//Helper function to get average speed
     void averageSpeeds() {
         int sum = 0;
         for(ArrayList<Double> value : speeds) {
@@ -167,18 +166,14 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         avgSpeed = sum / speeds.size();
     }
 
-    /**
-     * Destroy bluetooth connection when leaving screen
-     */
+    //Destroy bluetooth connection when leaving screen
     public void onDestroy() {
         super.onDestroy();
         bt.stopService();
         sendToCloud();
     }
 
-    /**
-     * Create connection to Arduino
-     */
+	//Create connection to HC-06
     void setupBt() {
         if (!connected) {
             connectView.setText("Connecting...");
@@ -197,15 +192,11 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
-    /**
-     * Calculate speed from acceleration using v = v0 + at
-     */
+    //Calculate speed from acceleration using v = v0 + at and send to HC-06
     public void getSpeed() {
-        ////////////////
-        //v = v0 + at
         double speedCalc = v0 + acc*((double)(System.currentTimeMillis() - startTime)/100.0);
         startTime = System.currentTimeMillis();
-        ////////////////
+
         setValues(speedCalc);
         setColor();
         if (connected) {
@@ -213,10 +204,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
         }
     }
 
-    /**
-     * Update acceleration values
-     * @param event
-     */
+	//Update acceleration values using accelerometer
     public void onSensorChanged(SensorEvent event){
         float[] accs = {event.values[0], event.values[1], event.values[2]};
         acc = 0;
@@ -232,9 +220,7 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
     public void onAccuracyChanged(Sensor event, int amt){
     }
 
-    /**
-     * Create map of data points containing speed and time, plus an id to group data points
-     */
+    //Create map of data points containing speed and time, plus an id to group data points
     public void sendToCloud() {
         String date = new SimpleDateFormat("M-d-yyyy", Locale.getDefault()).format(new Date());
         for (int i = 0; i < speeds.size(); i+= 10) {
@@ -249,13 +235,13 @@ public class Measured extends AppCompatActivity implements SensorEventListener {
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
-                            Log.v("ASDFS", "DocumentSnapshot added with ID: " + documentReference.getId());
+                            Log.v("Graph", "DocumentSnapshot added with ID: " + documentReference.getId());
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.v("ASDFS", "Error adding document", e);
+                            Log.v("Graph", "Error adding document", e);
                         }
                     });
             }
