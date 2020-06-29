@@ -1,17 +1,28 @@
 # Iot-Bike
 
-**What does it do?**
+
 ![Main Screen](exampleImages/main.jpg)
+
+**What does it do?**
 A system for measuring performance and setting goals for bike riding. Available as an android app. App has three modes:
 * Goal Setting: Determine how fast you want to go and for how long. LED turns blue if you're going too slow,
 red if you're going too fast, and green for just right
+
 ![Goal Screen](exampleImages/goal.jpg)
+
+
 * Measuring: LED simply shows you how fast you are going on a similar scale as goal setting: blue for pretty
 slow, red for pretty fast, green for in between
+
 ![Measuring Screen](exampleImages/measure.jpg)
+
+
 * Rainbow: for when you just want cool looking lights while you ride! Can also test bluetooth connection.
 All data is also stored in Firebase and accessable through the graph mode.
+
 ![Rainbow Screen](exampleImages/rainbow.jpg)
+
+
 
 **How does it work**
 The information in this setup largely flows from the user’s phone to an arduino via bluetooth which finally
@@ -20,7 +31,9 @@ color the LEDs should be. That data is transmitted to an HC-06 bluetooth module,
 Arduino Uno as shown. The Arduino is powered by a battery pack and itself powers and controls the lights directly.
 Throughout this process, data about the speed at various points in time is stored. This data is sent to the cloud
 through firebase when the app is closed, to be retrieved in graph mode.
+
 ![Diagram of wiring](exampleImages/diagram.jpg)
+
 
 For a demo, click [here](https://youtu.be/dh8N1zEurHc)
 
