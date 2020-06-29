@@ -8,7 +8,7 @@ red if you're going too fast, and green for just right
 ![Goal Screen](exampleImages/goal.jpg)
 * Measuring: LED simply shows you how fast you are going on a similar scale as goal setting: blue for pretty
 slow, red for pretty fast, green for in between
-![Measuring Screen](exampleImages/measuring.jpg)
+![Measuring Screen](exampleImages/measure.jpg)
 * Rainbow: for when you just want cool looking lights while you ride! Can also test bluetooth connection.
 All data is also stored in Firebase and accessable through the graph mode.
 ![Rainbow Screen](exampleImages/rainbow.jpg)
